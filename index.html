@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnapDiet — Eat Smart. Compete Hard.</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SnapDiet">
+<meta name="theme-color" content="#ff5722">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js');
+  });
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f2f0ec; --surface:#ffffff; --surface2:#f7f5f0; --surface3:#edeae3;
+  --accent:#ff5722; --accent2:#ff8c00; --blue:#2979ff; --red:#f44336;
+  --text:#111; --muted:#888; --muted2:#aaa;
+  --border:#e0ddd5; --border2:#d5d2ca;
+  --nav-h:60px; --bottom-h:66px; --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;max-width:480px;margin:0 auto;overflow-x:hidden;}
+
+/* ONBOARDING */
+#onboarding{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;flex-direction:column;max-width:480px;margin:0 auto;overflow-y:auto;}
+.ob-hero{background:linear-gradient(160deg,#1a1018 0%,#2d1a10 100%);padding:50px 28px 32px;text-align:center;position:relative;overflow:hidden;}
+.ob-hero::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(255,87,34,0.2) 0%,transparent 70%);}
+.ob-logo{font-family:'Barlow Condensed',sans-serif;font-size:44px;font-weight:900;letter-spacing:-1px;color:#fff;margin-bottom:6px;position:relative;}
+.ob-logo span{color:var(--accent);}
+.ob-tagline{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:20px;position:relative;}
+.ob-form{padding:24px;display:flex;flex-direction:column;gap:16px;}
+.ob-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.ob-input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;outline:none;transition:border-color 0.2s;}
+.ob-input:focus{border-color:var(--accent);}
+.ob-row{display:flex;gap:10px;}
+.ob-row .ob-input{flex:1;}
+.ob-unit{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;color:var(--muted);font-size:14px;display:flex;align-items:center;white-space:nowrap;}
+.country-search-wrap{position:relative;}
+.country-dropdown{position:absolute;top:100%;left:0;right:0;z-index:20;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;margin-top:4px;max-height:180px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+.country-dropdown.open{display:block;}
+.country-option{padding:11px 14px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:10px;transition:background 0.1s;}
+.country-option:hover{background:var(--surface2);}
+.co-emoji{font-size:20px;line-height:1;}
+.ob-btn{width:100%;background:var(--accent);color:white;border:none;padding:17px;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
+.ob-btn:hover{background:#ff6e40;}
+/* Google sign-in btn */
+.ob-google-btn{width:100%;background:white;color:#333;border:1.5px solid var(--border);padding:14px;border-radius:12px;font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.ob-google-btn:hover{background:#f8f8f8;border-color:#ccc;}
+.ob-google-btn svg{width:20px;height:20px;flex-shrink:0;}
+.ob-divider{display:flex;align-items:center;gap:10px;color:var(--muted2);font-size:12px;}
+.ob-divider::before,.ob-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.ob-error{color:#f44336;font-size:12px;text-align:center;display:none;font-family:'DM Mono',monospace;}
+.google-note{background:#fff8f0;border:1px solid #ffd0b0;border-radius:10px;padding:12px 14px;font-size:12px;color:#c0501a;line-height:1.6;}
+
+/* LANGUAGE SELECTOR */
+.lang-selector{display:flex;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;overflow:hidden;gap:0;}
+.lang-btn{background:none;border:none;padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.15s;border-right:1px solid var(--border);}
+.lang-btn:last-child{border-right:none;}
+.lang-btn.active{background:var(--accent);color:white;}
+.lang-btn:hover:not(.active){background:var(--surface3);color:var(--text);}
+
+/* TOP NAV */
+.top-nav{position:sticky;top:0;z-index:50;background:rgba(242,240,236,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 18px;}
+.nav-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;letter-spacing:-0.5px;color:var(--text);}
+.nav-logo span{color:var(--accent);}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.nav-streak{background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.25);padding:5px 10px;border-radius:20px;font-family:'DM Mono',monospace;font-size:11px;color:var(--accent2);}
+.nav-flag-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:5px;}
+.nav-flag-emoji{font-size:18px;line-height:1;}
+.nav-country-code{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1.5px solid var(--border);height:var(--bottom-h);display:flex;align-items:stretch;z-index:50;}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted2);font-size:10px;font-family:'DM Mono',monospace;letter-spacing:0.5px;text-transform:uppercase;border:none;background:none;transition:color 0.15s;}
+.nav-tab.active{color:var(--accent);}
+.nav-tab .icon{font-size:20px;}
+.nav-tab.snap-tab{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;flex:1.2;}
+.nav-tab.snap-tab .icon{font-size:24px;}
+
+/* PAGES */
+.page{display:none;padding-bottom:120px;}
+.page.active{display:block;}
+.snap-body{padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:140px;}
+.league-body{padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:140px;}
+.profile-body{padding:16px;display:flex;flex-direction:column;gap:14px;padding-bottom:140px;}
+.home-body{padding:14px;display:flex;flex-direction:column;gap:12px;padding-bottom:140px;}
+
+/* SHARED */
+.section-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.btn-primary{width:100%;background:var(--accent);color:white;border:none;padding:16px;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;letter-spacing:0.5px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-primary:hover:not(:disabled){background:#ff6e40;}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-secondary{width:100%;background:transparent;color:var(--accent);border:2px solid var(--accent);padding:14px;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;cursor:pointer;transition:all 0.2s;}
+.btn-secondary:hover{background:rgba(255,87,34,0.05);}
+
+/* HOME */
+.home-hero{background:linear-gradient(160deg,#1c1410 0%,#0d0d0f 100%);padding:24px 18px 28px;position:relative;overflow:hidden;}
+.home-hero::before{content:'';position:absolute;top:-80px;right:-40px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,87,34,0.15) 0%,transparent 70%);pointer-events:none;}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;position:relative;}
+.hero-greeting{font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:3px;font-family:'DM Mono',monospace;}
+.hero-name{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;letter-spacing:-0.5px;color:#fff;}
+.hero-rank-badge{background:linear-gradient(135deg,var(--accent),var(--accent2));padding:8px 14px;border-radius:10px;text-align:center;}
+.hrb-rank{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;line-height:1;color:white;}
+.hrb-label{font-size:10px;color:rgba(255,255,255,0.8);letter-spacing:1px;}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;}
+.hs-cell{background:rgba(255,255,255,0.06);padding:13px 10px;text-align:center;}
+.hs-num{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--accent);line-height:1;}
+.hs-lbl{font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;letter-spacing:1px;text-transform:uppercase;}
+.home-body{padding:14px;display:flex;flex-direction:column;gap:12px;}
+.cal-bar-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+.cbr-top{display:flex;justify-content:space-between;margin-bottom:10px;}
+.cbr-label{font-size:13px;font-weight:600;color:var(--muted);}
+.cbr-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--text);}
+.cbr-track{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;}
+.cbr-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width 0.6s ease;}
+.meals-card-header{padding:13px 16px;border-bottom:1.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.mch-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;}
+.mch-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+.meal-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--border);transition:background 0.15s;}
+.meal-row:last-child{border-bottom:none;}
+.meal-row:hover{background:var(--surface2);}
+.mr-emoji{font-size:24px;flex-shrink:0;}
+.mr-info{flex:1;}
+.mr-name{font-size:14px;font-weight:600;}
+.mr-time{font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace;}
+.mr-cal{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--accent);}
+.mr-score{font-size:11px;color:var(--muted);}
+.mr-delete{background:none;border:none;color:var(--muted2);font-size:16px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:all 0.15s;flex-shrink:0;}
+.mr-delete:hover{color:#f44336;background:rgba(244,67,54,0.08);}
+.mr-add{opacity:0.4;cursor:pointer;}
+.mr-add:hover{opacity:0.7;}
+.no-meals{padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;}
+.league-mini-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.see-all-btn{background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;}
+.lb-mini{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.lbm-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1.5px solid var(--border);}
+.lbm-row:last-child{border-bottom:none;}
+.lbm-row.me{background:rgba(255,87,34,0.04);}
+.lbm-rank{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;width:26px;color:var(--muted);}
+.lbm-rank.g{color:#f0a500;}.lbm-rank.s{color:#888;}.lbm-rank.b{color:#c06a20;}
+.lbm-flag{font-size:20px;line-height:1;}
+.lbm-name{flex:1;font-size:13px;font-weight:600;}
+.lbm-pts{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--accent);}
+.me-pill{background:var(--accent);color:white;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:5px;font-family:'DM Mono',monospace;}
+
+/* SNAP */
+.snap-body{padding:16px;display:flex;flex-direction:column;gap:14px;}
+.snap-header{padding-top:4px;}
+.snap-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;letter-spacing:-0.5px;}
+.snap-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius);padding:34px 20px;text-align:center;background:var(--surface);cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(255,87,34,0.03);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.uz-icon{font-size:38px;display:block;margin-bottom:10px;}
+.uz-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px;}
+.uz-sub{font-size:12px;color:var(--muted);}
+.uz-badge{display:inline-block;background:rgba(41,121,255,0.1);border:1px solid rgba(41,121,255,0.3);color:var(--blue);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;margin-top:10px;font-family:'DM Mono',monospace;}
+.ts-strip{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.65);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;}
+.ts-time{font-family:'DM Mono',monospace;font-size:12px;color:#fff;font-weight:600;letter-spacing:0.5px;}
+.ts-verified{font-size:11px;color:#4caf50;font-family:'DM Mono',monospace;}
+.preview-wrap{position:relative;border-radius:var(--radius);overflow:hidden;border:1.5px solid var(--border);}
+.preview-img{width:100%;max-height:250px;object-fit:cover;display:block;}
+.preview-overlay{position:absolute;bottom:0;left:0;right:0;padding:12px 14px;background:linear-gradient(transparent,rgba(0,0,0,0.6));display:flex;justify-content:flex-end;}
+.btn-change{background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;backdrop-filter:blur(8px);}
+.fat-note{background:#fff8f0;border:1px solid #ffd0b0;border-radius:10px;padding:12px 14px;font-size:12px;color:#c0501a;display:flex;gap:8px;align-items:flex-start;line-height:1.6;}
+.manual-section{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.manual-header{padding:13px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:8px;}
+.mh-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;}
+.mh-opt{font-size:11px;color:var(--muted);margin-left:auto;font-family:'DM Mono',monospace;}
+.manual-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1.5px solid var(--border);}
+.mi-emoji{font-size:18px;}
+.mi-name{flex:1;font-size:13px;font-weight:500;}
+.mi-qty{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;background:var(--surface2);padding:2px 8px;border-radius:6px;}
+.mi-rm{background:none;border:none;color:var(--muted2);font-size:15px;cursor:pointer;padding:3px 6px;}
+.mi-rm:hover{color:var(--red);}
+.add-row{padding:10px 14px;display:flex;gap:8px;border-top:1.5px solid var(--border);}
+.add-input{flex:2;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;}
+.add-input:focus{border-color:var(--accent);}
+.add-qty{width:72px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:9px 8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;text-align:center;}
+.add-qty:focus{border-color:var(--accent);}
+.add-btn{background:var(--accent);color:white;border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.loading-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:36px 20px;text-align:center;display:none;}
+.loading-card.show{display:block;}
+.spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.lstep{font-size:12px;color:var(--muted);opacity:0;transition:opacity 0.4s;font-family:'DM Mono',monospace;margin-top:8px;}
+.lstep.active{opacity:1;color:var(--accent);}
+.lstep.done{opacity:0.35;}
+.result-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;display:none;}
+.result-card.show{display:block;}
+.result-top{padding:18px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:14px;justify-content:space-between;}
+.rt-name{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:3px;}
+.rt-sub{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.score-ring{width:74px;height:74px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid;flex-shrink:0;}
+.score-ring .snum{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;line-height:1;}
+.score-ring .slbl{font-size:10px;opacity:0.7;margin-top:1px;font-family:'DM Mono',monospace;}
+.sr-great{border-color:#00b84a;color:#00b84a;background:rgba(0,184,74,0.06);}
+.sr-good{border-color:#2979ff;color:#2979ff;background:rgba(41,121,255,0.06);}
+.sr-ok{border-color:#ff8c00;color:#ff8c00;background:rgba(255,140,0,0.06);}
+.sr-poor{border-color:#f44336;color:#f44336;background:rgba(244,67,54,0.06);}
+.macros-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1.5px solid var(--border);}
+.mg-cell{background:var(--surface);padding:12px 8px;text-align:center;}
+.mg-val{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;color:var(--accent);}
+.mg-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;font-family:'DM Mono',monospace;}
+.items-ttl-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.items-ttl{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-family:'DM Mono',monospace;}
+.edit-portions-btn{background:none;border:1px solid var(--border2);border-radius:8px;padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Barlow',sans-serif;transition:all 0.15s;}
+.edit-portions-btn:hover{border-color:var(--accent);color:var(--accent);}
+.edit-note{font-size:12px;color:var(--muted);margin-bottom:10px;font-family:'DM Mono',monospace;}
+.portion-edit-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;background:var(--surface2);border-radius:10px;padding:10px 12px;}
+.per-emoji{font-size:18px;}
+.per-name{flex:1;font-size:13px;font-weight:600;}
+.per-input{width:70px;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:6px 8px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--text);outline:none;text-align:center;}
+.per-input:focus{border-color:var(--accent);}
+.per-unit{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
+.btn-recalc{width:100%;background:var(--blue);color:white;border:none;border-radius:10px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;cursor:pointer;margin-top:4px;transition:background 0.2s;}
+.btn-recalc:hover{background:#1a56d6;}
+.recalc-loading{text-align:center;padding:16px;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);display:none;}
+.food-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:8px;}
+.food-row:last-child{margin-bottom:0;}
+.fr-emoji{font-size:20px;}
+.fr-info{flex:1;}
+.fr-name{font-size:13px;font-weight:600;}
+.fr-portion{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:1px;}
+.fr-cal{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--accent);}
+.fat-warn-row{background:#fff8f0;border-radius:10px;padding:9px 12px;margin-bottom:8px;font-size:12px;color:#c0501a;display:flex;gap:7px;align-items:center;}
+.flags-row{padding:12px 16px;border-bottom:1.5px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;}
+.flag{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;}
+.flag-good{background:rgba(0,184,74,0.1);color:#00934a;}
+.flag-warn{background:rgba(244,67,54,0.1);color:#d32f2f;}
+.pts-banner{background:linear-gradient(135deg,#1c1410,#0d0d0f);padding:18px 16px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;border-bottom:1.5px solid var(--border);}
+.pts-banner::before{content:'';position:absolute;right:-20px;top:-20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(255,87,34,0.15) 0%,transparent 70%);}
+.pts-label{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;margin-bottom:2px;color:#fff;}
+.pts-sub{font-size:11px;color:rgba(255,255,255,0.4);}
+.pts-num{font-family:'Barlow Condensed',sans-serif;font-size:50px;font-weight:900;color:var(--accent);line-height:1;position:relative;}
+.pts-unit{font-size:11px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;text-align:right;margin-top:2px;}
+.tip-box{padding:14px 16px;background:var(--surface2);}
+.tip-ttl{font-size:13px;font-weight:700;margin-bottom:6px;}
+.tip-txt{font-size:13px;color:var(--muted);line-height:1.6;}
+.error-box{background:#fff5f5;border:1px solid #fcc;border-radius:10px;padding:14px 16px;color:#c62828;font-size:13px;font-family:'DM Mono',monospace;display:none;}
+.error-box.show{display:block;}
+
+/* LEAGUE */
+.league-body{padding:16px;display:flex;flex-direction:column;gap:14px;}
+.league-tabs{display:flex;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:4px;gap:4px;}
+.ltab{flex:1;padding:8px 4px;border:none;background:none;border-radius:8px;font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.ltab.active{background:var(--accent);color:white;}
+.league-banner{background:linear-gradient(135deg,#1c1410,#0d0d12);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;display:flex;justify-content:space-between;align-items:center;position:relative;overflow:hidden;}
+.league-banner::before{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,87,34,0.12) 0%,transparent 70%);}
+.lb-title2{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:4px;color:#fff;}
+.lb-sub2{font-size:11px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;}
+.lb-days{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;color:var(--accent);line-height:1;text-align:right;position:relative;}
+.lb-days-lbl{font-size:11px;color:rgba(255,255,255,0.4);text-align:right;}
+.lb-list{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.lb-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1.5px solid var(--border);transition:background 0.15s;}
+.lb-row:last-child{border-bottom:none;}
+.lb-row:hover{background:var(--surface2);}
+.lb-row.me{background:rgba(255,87,34,0.04);}
+.lb-rnk{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;width:30px;color:var(--muted);}
+.lb-rnk.g{color:#f0a500;}.lb-rnk.s{color:#888;}.lb-rnk.b{color:#c06a20;}
+.lb-flag{font-size:22px;line-height:1;flex-shrink:0;}
+.lb-uinfo{flex:1;}
+.lb-uname{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.me-tag{background:var(--accent);color:white;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;font-family:'DM Mono',monospace;}
+.lb-usub{font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace;}
+.lb-rpts{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--accent);}
+.lb-rptsub{font-size:10px;color:var(--muted);text-align:right;font-family:'DM Mono',monospace;}
+.prize-box{background:#fffbec;border:1.5px solid #f0d060;border-radius:var(--radius);padding:16px 18px;}
+.prize-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:#b08010;margin-bottom:6px;}
+.prize-txt{font-size:13px;color:#907010;line-height:1.6;}
+
+/* PROFILE TABS */
+.profile-hero{background:linear-gradient(160deg,#1c1410,#0d0d0f);padding:24px 18px 20px;text-align:center;position:relative;overflow:hidden;}
+.profile-hero::before{content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,87,34,0.12) 0%,transparent 70%);}
+.profile-tabs{display:flex;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:4px;gap:4px;margin-bottom:14px;}
+.ptab{flex:1;padding:9px 4px;border:none;background:none;border-radius:8px;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.ptab.active{background:var(--accent);color:white;}
+.profile-tab-content{display:none;padding:0 14px 140px;}
+.profile-tab-content.active{display:block;}
+.ph-flag{font-size:52px;margin-bottom:8px;position:relative;display:block;}
+.ph-name{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;margin-bottom:2px;position:relative;color:#fff;}
+.ph-country{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:6px;position:relative;}
+.ph-email{font-size:11px;color:rgba(255,255,255,0.3);font-family:'DM Mono',monospace;margin-bottom:18px;}
+.ph-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;}
+.phs-cell{background:rgba(255,255,255,0.06);padding:13px 8px;text-align:center;}
+.phs-num{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:var(--accent);}
+.phs-lbl{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.section-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.sc-header{padding:14px 16px;border-bottom:1.5px solid var(--border);}
+.sc-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;}
+.streak-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:14px 16px;}
+.sd{aspect-ratio:1;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'DM Mono',monospace;color:var(--muted);border:1.5px solid var(--border);}
+.sd.done{background:var(--accent);color:white;border-color:var(--accent);}
+.sd.today{background:var(--blue);color:white;border-color:var(--blue);}
+
+/* BADGES — collapsible */
+.badges-section{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
+.badges-header{padding:14px 16px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.badges-header:hover{background:var(--surface2);}
+.bh-left{display:flex;align-items:center;gap:8px;}
+.bh-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;}
+.bh-count{background:var(--accent);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace;}
+.bh-arrow{font-size:12px;color:var(--muted);transition:transform 0.25s;display:inline-block;}
+.bh-arrow.open{transform:rotate(180deg);}
+.badges-body{display:none;border-top:1.5px solid var(--border);}
+.badges-body.open{display:block;}
+.badge-cat{padding:12px 16px 0;}
+.badge-cat-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.badge-list{display:flex;flex-direction:column;gap:1px;margin-bottom:12px;}
+.badge-row{display:flex;align-items:center;gap:12px;padding:12px 0;}
+.badge-row+.badge-row{border-top:1px solid var(--border);}
+.badge-icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.badge-row.unlocked .badge-icon-wrap{background:rgba(255,87,34,0.08);border:1.5px solid rgba(255,87,34,0.2);}
+.badge-row.locked .badge-icon-wrap{background:var(--surface2);border:1.5px solid var(--border);filter:grayscale(1);opacity:0.4;}
+.badge-row-info{flex:1;}
+.badge-row-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.badge-row.locked .badge-row-name{color:var(--muted);}
+.badge-row-desc{font-size:12px;color:var(--muted);}
+.badge-status{flex-shrink:0;}
+.badge-check{color:#00934a;font-size:18px;font-weight:700;}
+.badge-lock{color:var(--muted2);font-size:16px;}
+.badge-new{background:var(--accent);color:white;font-size:9px;font-weight:700;padding:3px 8px;border-radius:10px;font-family:'DM Mono',monospace;}
+
+/* WEIGHT */
+.weight-list{padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+.wl-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;}
+.wl-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex:1;}
+.wl-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;}
+.wl-diff{font-size:12px;font-weight:600;}
+.wl-diff.down{color:#00934a;}.wl-diff.up{color:#c62828;}
+.add-weight-row{padding:0 16px 16px;display:flex;gap:8px;}
+.weight-inp{flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;outline:none;}
+.weight-inp:focus{border-color:var(--accent);}
+.weight-btn{background:var(--accent);color:white;border:none;border-radius:10px;padding:11px 20px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;cursor:pointer;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fadein{animation:fadeUp 0.35s ease forwards;}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-hero">
+    <div class="ob-logo">Snap<span>Diet</span></div>
+    <div class="ob-tagline">Eat Smart. Compete Hard.</div>
+  </div>
+  <div class="ob-form">
+
+    <!-- Google Sign-in (UI only — needs Firebase in production) -->
+    <div>
+      <button class="ob-google-btn" onclick="signInWithGoogle()">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <div id="googleNote" class="google-note" style="display:none;margin-top:10px;">
+        🔧 Google Login requires Firebase setup. For now, create an account below — Google Login will be connected in the next version.
+      </div>
+    </div>
+
+    <div class="ob-divider">or create account</div>
+
+    <div>
+      <div class="ob-label">Your Name</div>
+      <input class="ob-input" id="obName" type="text" placeholder="e.g. Slava">
+    </div>
+    <div>
+      <div class="ob-label">Email</div>
+      <input class="ob-input" id="obEmail" type="email" placeholder="you@email.com">
+    </div>
+    <div id="passFieldWrap">
+      <div class="ob-label">Password</div>
+      <input class="ob-input" id="obPassword" type="password" placeholder="min 6 characters">
+    </div>
+    <div>
+      <div class="ob-label">Your Country</div>
+      <div class="country-search-wrap">
+        <input class="ob-input" id="countrySearch" type="text" placeholder="Search country..." autocomplete="off">
+        <div class="country-dropdown" id="countryDropdown"></div>
+      </div>
+      <input type="hidden" id="countryCode" value="">
+    </div>
+    <div>
+      <div class="ob-label">Starting Weight</div>
+      <div class="ob-row">
+        <input class="ob-input" id="obWeight" type="number" placeholder="85" step="0.1" min="30" max="300">
+        <div class="ob-unit">kg</div>
+      </div>
+    </div>
+    <div>
+      <div class="ob-label">Target Weight</div>
+      <div class="ob-row">
+        <input class="ob-input" id="obTarget" type="number" placeholder="75" step="0.1" min="30" max="300">
+        <div class="ob-unit">kg</div>
+      </div>
+    </div>
+    <div id="obError" class="ob-error">Please fill in all fields correctly</div>
+    <button class="ob-btn" onclick="finishOnboarding()">CREATE ACCOUNT 🚀</button>
+  </div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="nav-logo">Snap<span>Diet</span></div>
+  <div class="nav-right">
+    <div class="nav-streak" id="navStreak">🔥 0</div>
+    <div class="lang-selector" id="langSelector">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('he')">HE</button>
+      <button class="lang-btn" onclick="setLang('ru')">RU</button>
+    </div>
+    <div class="nav-flag-wrap" id="navFlagWrap">
+      <span id="navFlagBadge"></span>
+      <span class="nav-country-code" id="navCode">--</span>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="home-hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-greeting" id="heroGreeting">// Good evening</div>
+        <div class="hero-name" id="heroName">Champ 👋</div>
+      </div>
+      <div class="hero-rank-badge"><div class="hrb-rank">#3</div><div class="hrb-label">GLOBAL</div></div>
+    </div>
+    <div class="hero-stats">
+      <div class="hs-cell"><div class="hs-num" id="homeTodayPts">0</div><div class="hs-lbl">Pts Today</div></div>
+      <div class="hs-cell"><div class="hs-num" id="heroStreak">0</div><div class="hs-lbl">Day Streak</div></div>
+      <div class="hs-cell"><div class="hs-num">-2.1%</div><div class="hs-lbl">This Month</div></div>
+    </div>
+  </div>
+  <div class="home-body">
+    <div class="cal-bar-card">
+      <div class="cbr-top"><span class="cbr-label">Today's calories</span><span class="cbr-val" id="homeTotalCal">0 kcal</span></div>
+      <div class="cbr-track"><div class="cbr-fill" id="homeCalBar" style="width:0%"></div></div>
+    </div>
+    <div class="card">
+      <div class="meals-card-header">
+        <div class="mch-title">Today's Meals</div>
+        <div class="mch-count" id="mealCount">0 logged</div>
+      </div>
+      <div id="homeMealsList"></div>
+      <div class="meal-row mr-add" onclick="switchTab('snap')">
+        <div class="mr-emoji">➕</div>
+        <div class="mr-info"><div class="mr-name">Log a meal</div><div class="mr-time">Tap to snap & analyze</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="league-mini-header">
+        <div><div class="section-tag">// global league</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900">Top 5 This Week</div></div>
+        <button class="see-all-btn" onclick="switchTab('league')">See all →</button>
+      </div>
+      <div class="lb-mini" id="homeLbMini"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SNAP -->
+<div class="page" id="page-snap">
+  <div class="snap-body">
+    <div class="snap-header">
+      <div class="section-tag">// log your meal</div>
+      <div class="snap-title">What did you eat?</div>
+      <div class="snap-sub">Photo + hidden ingredients = most accurate score</div>
+    </div>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none">
+      <span class="uz-icon">📷</span>
+      <div class="uz-title">Take a photo now</div>
+      <div class="uz-sub">Camera only — no gallery uploads</div>
+      <div class="uz-badge" style="display:none">🔒 Anti-cheat</div>
+    </div>
+    <canvas id="tsCanvas" style="display:none"></canvas>
+    <div id="previewWrap" style="display:none">
+      <div class="preview-wrap">
+        <img id="previewImg" class="preview-img" src="" alt="">
+        <div class="preview-overlay" style="justify-content:space-between;align-items:flex-end;">
+          <button class="btn-change" onclick="resetPhoto()">🔄 Retake</button>
+          <div class="ts-strip" style="position:relative;background:none;padding:0;">
+            <span class="ts-time" id="tsDisplay">—</span>
+            <span class="ts-verified">✓ Live</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fat-note">💡 AI can't see oils, butter & dressings. Add them below with quantity for accuracy.</div>
+    <div class="manual-section">
+      <div class="manual-header">
+        <span style="font-size:16px">🧂</span>
+        <div class="mh-title">Hidden Ingredients</div>
+        <div class="mh-opt">optional</div>
+      </div>
+      <div id="manualList"></div>
+      <div class="add-row">
+        <input type="text" class="add-input" id="manualInput" placeholder="e.g. olive oil, butter...">
+        <input type="number" class="add-qty" id="manualQty" placeholder="g/ml" min="1" max="999">
+        <button class="add-btn" onclick="addManualItem()">+ Add</button>
+      </div>
+    </div>
+    <button class="btn-primary" id="analyzeBtn" onclick="analyzeMeal()" disabled>🔬 ANALYZE & GET SCORE</button>
+    <div class="error-box" id="errorBox"></div>
+    <div class="loading-card" id="loadingCard">
+      <div class="spinner"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px">ANALYZING</div>
+      <div class="lstep" id="ls1">🔍 Identifying food items...</div>
+      <div class="lstep" id="ls2">⚖️ Calculating macros + hidden fats...</div>
+      <div class="lstep" id="ls3">🏆 Computing league score...</div>
+    </div>
+    <div class="result-card" id="resultCard">
+      <div class="result-top">
+        <div><div class="rt-name" id="rName">—</div><div class="rt-sub">// AI analysis</div></div>
+        <div class="score-ring" id="rRing"><span class="snum" id="rScore">—</span><span class="slbl" id="rLabel">—</span></div>
+      </div>
+      <div class="macros-grid">
+        <div class="mg-cell"><div class="mg-val" id="rCal">—</div><div class="mg-lbl">kcal</div></div>
+        <div class="mg-cell"><div class="mg-val" id="rProt">—</div><div class="mg-lbl">protein</div></div>
+        <div class="mg-cell"><div class="mg-val" id="rCarb">—</div><div class="mg-lbl">carbs</div></div>
+        <div class="mg-cell"><div class="mg-val" id="rFat">—</div><div class="mg-lbl">fat</div></div>
+      </div>
+      <div class="items-sec">
+        <div class="items-ttl-row">
+          <div class="items-ttl">Identified items</div>
+          <button class="edit-portions-btn" id="editPortionsBtn" onclick="toggleEditPortions()">✏️ Edit portions</button>
+        </div>
+        <div id="rItems"></div>
+        <div id="editPortionsForm" style="display:none">
+          <div class="edit-note">Adjust quantities → AI recalculates</div>
+          <div id="portionInputs"></div>
+          <button class="btn-recalc" onclick="recalcPortions()">🔄 Recalculate</button>
+        </div>
+      </div>
+      <div class="flags-row" id="rFlags"></div>
+      <div class="pts-banner">
+        <div><div class="pts-label">🏆 League Points Earned</div><div class="pts-sub">Added to monthly score</div></div>
+        <div>
+          <div class="pts-num" id="rPts">—</div>
+          <div class="pts-unit" id="ptsBreakdown">pts today</div>
+        </div>
+      </div>
+      <div class="tip-box"><div class="tip-ttl">💡 AI Tip</div><div class="tip-txt" id="rTip">—</div></div>
+    </div>
+    <button class="btn-secondary" id="retryBtn" style="display:none" onclick="resetAll()">📸 LOG ANOTHER MEAL</button>
+  </div>
+</div>
+
+<!-- LEAGUE -->
+<div class="page" id="page-league">
+  <div class="league-body">
+    <div class="league-tabs">
+      <button class="ltab" id="ltab-global" data-tab="global" onclick="switchLeagueTab(this,'global')">🌍 Global</button>
+      <button class="ltab" id="ltab-country" data-tab="country" onclick="switchLeagueTab(this,'country')">🏳️ My Country</button>
+      <button class="ltab" id="ltab-weekly" data-tab="weekly" onclick="switchLeagueTab(this,'weekly')">⭐ Weekly</button>
+    </div>
+    <div class="league-banner">
+      <div><div class="lb-title2">May 2026 League</div><div class="lb-sub2">// 6 days remaining</div></div>
+      <div><div class="lb-days">6</div><div class="lb-days-lbl">days left</div></div>
+    </div>
+    <div class="lb-list" id="leagueList"></div>
+    <div class="prize-box">
+      <div class="prize-title">🏆 This Month's Prize</div>
+      <div class="prize-txt">Top 3 win a featured badge + Hall of Fame spot. Weekly #1 wins a 🔥 streak multiplier for next week.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+
+  <!-- Profile hero — always visible -->
+  <div class="profile-hero">
+    <div id="profFlag" style="margin-bottom:8px;display:flex;justify-content:center;"></div>
+    <div class="ph-name" id="profName">—</div>
+    <div class="ph-country" id="profCountry">—</div>
+    <div class="ph-email" id="profEmail">—</div>
+    <div class="ph-stats">
+      <div class="phs-cell"><div class="phs-num" id="profStreak">0</div><div class="phs-lbl">Streak</div></div>
+      <div class="phs-cell"><div class="phs-num" id="profPts">0</div><div class="phs-lbl">Total Pts</div></div>
+      <div class="phs-cell"><div class="phs-num">#3</div><div class="phs-lbl">Global</div></div>
+    </div>
+  </div>
+
+  <!-- Inner tabs -->
+  <div style="padding:14px 14px 0;">
+    <div class="profile-tabs">
+      <button class="ptab active" id="ptab-stats" onclick="switchProfileTab('stats')">📊 Stats</button>
+      <button class="ptab" id="ptab-badges" onclick="switchProfileTab('badges')">🏅 Badges</button>
+      <button class="ptab" id="ptab-weight" onclick="switchProfileTab('weight')">⚖️ Weight</button>
+    </div>
+  </div>
+
+  <!-- STATS tab -->
+  <div class="profile-tab-content active" id="ptab-content-stats">
+    <div class="section-card">
+      <div class="sc-header"><div class="sc-title">🔥 Streak Calendar — May</div></div>
+      <div class="streak-grid" id="streakGrid"></div>
+    </div>
+  </div>
+
+  <!-- BADGES tab -->
+  <div class="profile-tab-content" id="ptab-content-badges">
+    <div id="badgesBody" style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;"></div>
+  </div>
+
+  <!-- WEIGHT tab -->
+  <div class="profile-tab-content" id="ptab-content-weight">
+    <div class="section-card">
+      <div class="sc-header"><div class="sc-title">⚖️ Weight Log</div></div>
+      <div class="weight-list" id="weightLog">
+        <div class="wl-row"><span class="wl-date">Start</span><span class="wl-val" id="startWeightDisp">— kg</span><span class="wl-diff">start</span></div>
+      </div>
+      <div class="add-weight-row">
+        <input type="number" class="weight-inp" id="weightInput" placeholder="kg" step="0.1" min="30" max="300">
+        <button class="weight-btn" onclick="logWeight()">LOG</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-tab active" id="tab-home" onclick="switchTab('home')"><span class="icon">🏠</span>Home</button>
+  <button class="nav-tab snap-tab" id="tab-snap" onclick="switchTab('snap')"><span class="icon">📸</span>Snap</button>
+  <button class="nav-tab" id="tab-league" onclick="switchTab('league')"><span class="icon">🏆</span>League</button>
+  <button class="nav-tab" id="tab-profile" onclick="switchTab('profile')"><span class="icon">👤</span>Profile</button>
+</nav>
+
+<script>
+// ── i18n TRANSLATION SYSTEM ──
+const TRANSLATIONS = {
+  en: {
+    dir:'ltr',
+    ob_tagline:'Eat Smart. Compete Hard.',ob_google:'Continue with Google',ob_or:'or create account',
+    ob_name:'Your Name',ob_name_ph:'e.g. Slava',ob_email:'Email',ob_email_ph:'you@email.com',
+    ob_pass:'Password',ob_pass_ph:'min 6 characters',ob_country:'Your Country',ob_country_ph:'Search country...',
+    ob_start_w:'Starting Weight',ob_target_w:'Target Weight',
+    ob_error:'Please fill in all fields correctly',ob_pass_error:'Password must be at least 6 characters',
+    ob_btn:'CREATE ACCOUNT 🚀',
+    nav_home:'Home',nav_snap:'Snap',nav_league:'League',nav_profile:'Profile',
+    greeting_morning:'Good morning',greeting_afternoon:'Good afternoon',greeting_evening:'Good evening',
+    pts_today:'Pts Today',day_streak:'Day Streak',this_month:'This Month',
+    todays_cal:"Today's calories",todays_meals:"Today's Meals",logged:'logged',
+    log_meal:'Log a meal',tap_snap:'Tap to snap & analyze',
+    global_league:'// global league',top5:'Top 5 This Week',see_all:'See all →',
+    log_your_meal:'// log your meal',what_eat:'What did you eat?',
+    snap_sub:'Photo + hidden ingredients = most accurate score',
+    snap_photo:'Snap your meal',snap_photo_sub:'Tap to take photo or pick from gallery',
+    change_photo:'Change photo',
+    fat_note:"💡 AI can't see oils, butter & dressings. Add them below with quantity.",
+    hidden_ing:'Hidden Ingredients',optional:'optional',
+    add_ph:'e.g. olive oil, butter...',qty_ph:'g/ml',
+    analyze_btn:'🔬 ANALYZE & GET SCORE',analyzing:'ANALYZING',
+    step1:'🔍 Identifying food items...',step2:'⚖️ Calculating macros + hidden fats...',step3:'🏆 Computing league score...',
+    ai_analysis:'// AI analysis',kcal:'kcal',protein:'protein',carbs:'carbs',fat:'fat',
+    identified:'Identified items',
+    pts_earned:'🏆 League Points Earned',pts_added:'Added to monthly score',pts_unit:'pts today',
+    ai_tip:'💡 AI Tip',log_another:'📸 LOG ANOTHER MEAL',
+    fat_warn:'⚠️ Oils & dressings not visible — add them above for accuracy.',
+    no_meals:'No meals logged yet today',
+    global:'🌍 Global',my_country:'🏳️ My Country',weekly:'⭐ Weekly',
+    league_title:'May 2026 League',days_remaining:'// 6 days remaining',days_left:'days left',
+    prize_title:"🏆 This Month's Prize",
+    prize_txt:'Top 3 win a featured badge + Hall of Fame spot. Weekly #1 wins a 🔥 streak multiplier.',
+    pts:'pts',tab_stats:'📊 Stats',tab_badges:'🏅 Badges',tab_weight:'⚖️ Weight',
+    streak_cal:'🔥 Streak Calendar — May',weight_log:'⚖️ Weight Log',
+    start:'Start',log_btn:'LOG',global_lbl:'Global',streak_lbl:'Streak',total_pts:'Total Pts',
+    great:'Great',good:'Good',ok:'OK',poor:'Poor',
+  },
+  he: {
+    dir:'rtl',
+    ob_tagline:'אכול חכם. תתחרה בכולם.',ob_google:'כניסה עם גוגל',ob_or:'או צור חשבון',
+    ob_name:'שם',ob_name_ph:'למשל: שלבה',ob_email:'אימייל',ob_email_ph:'you@email.com',
+    ob_pass:'סיסמה',ob_pass_ph:'מינימום 6 תווים',ob_country:'מדינה',ob_country_ph:'חפש מדינה...',
+    ob_start_w:'משקל התחלתי',ob_target_w:'משקל יעד',
+    ob_error:'אנא מלא את כל השדות',ob_pass_error:'סיסמה חייבת להיות לפחות 6 תווים',
+    ob_btn:'צור חשבון 🚀',
+    nav_home:'בית',nav_snap:'צלם',nav_league:'ליגה',nav_profile:'פרופיל',
+    greeting_morning:'בוקר טוב',greeting_afternoon:'צהריים טובים',greeting_evening:'ערב טוב',
+    pts_today:"נק' היום",day_streak:'ימים רצופים',this_month:'החודש',
+    todays_cal:'קלוריות היום',todays_meals:'ארוחות היום',logged:'נרשמו',
+    log_meal:'רשום ארוחה',tap_snap:'לחץ לצילום וניתוח',
+    global_league:'// ליגה גלובלית',top5:'טופ 5 השבוע',see_all:'הכל →',
+    log_your_meal:'// רשום ארוחה',what_eat:'מה אכלת?',
+    snap_sub:'תמונה + מרכיבים נסתרים = ניקוד מדויק',
+    snap_photo:'צלם את הארוחה',snap_photo_sub:'לחץ לצילום או בחר מהגלריה',
+    change_photo:'שנה תמונה',
+    fat_note:'💡 הבינה המלאכותית לא רואה שמנים ורטבים. הוסף אותם למטה עם כמות.',
+    hidden_ing:'מרכיבים נסתרים',optional:'אופציונלי',
+    add_ph:'למשל: שמן זית, חמאה...',qty_ph:'גרם',
+    analyze_btn:'🔬 נתח וקבל ניקוד',analyzing:'מנתח...',
+    step1:'🔍 מזהה פריטי אוכל...',step2:'⚖️ מחשב מאקרו + שומנים נסתרים...',step3:'🏆 מחשב ניקוד ליגה...',
+    ai_analysis:'// ניתוח בינה מלאכותית',kcal:"קל'",protein:'חלבון',carbs:'פחמימות',fat:'שומן',
+    identified:'פריטים שזוהו',
+    pts_earned:'🏆 נקודות ליגה שנצברו',pts_added:'נוסף לניקוד החודשי',pts_unit:"נק' היום",
+    ai_tip:'💡 טיפ מהבינה המלאכותית',log_another:'📸 רשום ארוחה נוספת',
+    fat_warn:'⚠️ שמנים ורטבים לא נראים — הוסף אותם למעלה לדיוק.',
+    no_meals:'לא נרשמו ארוחות היום',
+    global:'🌍 גלובלי',my_country:'🏳️ המדינה שלי',weekly:'⭐ שבועי',
+    league_title:'ליגת מאי 2026',days_remaining:'// נותרו 6 ימים',days_left:'ימים נותרו',
+    prize_title:'🏆 פרס החודש',
+    prize_txt:'טופ 3 מקבלים תג + מקום בהיכל התהילה. מקום 1 שבועי מקבל מכפיל 🔥.',
+    pts:"נק'",tab_stats:'📊 סטטיסטיקה',tab_badges:'🏅 תגים',tab_weight:'⚖️ משקל',
+    streak_cal:'🔥 לוח רצף — מאי',weight_log:'⚖️ יומן משקל',
+    start:'התחלה',log_btn:'רשום',global_lbl:'גלובלי',streak_lbl:'רצף',total_pts:'סה"כ נק׳',
+    great:'מצוין',good:'טוב',ok:'בסדר',poor:'גרוע',
+  },
+  ru: {
+    dir:'ltr',
+    ob_tagline:'Ешь умно. Побеждай всех.',ob_google:'Войти через Google',ob_or:'или создать аккаунт',
+    ob_name:'Имя',ob_name_ph:'напр. Слава',ob_email:'Эл. почта',ob_email_ph:'you@email.com',
+    ob_pass:'Пароль',ob_pass_ph:'мин. 6 символов',ob_country:'Страна',ob_country_ph:'Поиск страны...',
+    ob_start_w:'Начальный вес',ob_target_w:'Целевой вес',
+    ob_error:'Пожалуйста, заполните все поля',ob_pass_error:'Пароль должен быть не менее 6 символов',
+    ob_btn:'СОЗДАТЬ АККАУНТ 🚀',
+    nav_home:'Главная',nav_snap:'Фото',nav_league:'Лига',nav_profile:'Профиль',
+    greeting_morning:'Доброе утро',greeting_afternoon:'Добрый день',greeting_evening:'Добрый вечер',
+    pts_today:'Очков сегодня',day_streak:'Дней подряд',this_month:'В этом месяце',
+    todays_cal:'Калории сегодня',todays_meals:'Блюда сегодня',logged:'записано',
+    log_meal:'Добавить блюдо',tap_snap:'Нажмите для фото и анализа',
+    global_league:'// глобальная лига',top5:'Топ 5 этой недели',see_all:'Все →',
+    log_your_meal:'// запись блюда',what_eat:'Что вы ели?',
+    snap_sub:'Фото + скрытые ингредиенты = точный счёт',
+    snap_photo:'Сфотографируйте блюдо',snap_photo_sub:'Нажмите для съёмки или выберите из галереи',
+    change_photo:'Изменить фото',
+    fat_note:'💡 ИИ не видит масла и соусы. Добавьте их ниже с количеством.',
+    hidden_ing:'Скрытые ингредиенты',optional:'необязательно',
+    add_ph:'напр. оливковое масло...',qty_ph:'г/мл',
+    analyze_btn:'🔬 АНАЛИЗИРОВАТЬ',analyzing:'АНАЛИЗИРУЕМ',
+    step1:'🔍 Определяем продукты...',step2:'⚖️ Считаем КБЖУ + скрытые жиры...',step3:'🏆 Вычисляем очки лиги...',
+    ai_analysis:'// анализ ИИ',kcal:'ккал',protein:'белки',carbs:'углеводы',fat:'жиры',
+    identified:'Определённые продукты',
+    pts_earned:'🏆 Очки лиги получены',pts_added:'Добавлено к счёту месяца',pts_unit:'оч. сегодня',
+    ai_tip:'💡 Совет ИИ',log_another:'📸 ЗАПИСАТЬ ЕЩЁ',
+    fat_warn:'⚠️ Масла и соусы не видны — добавьте их выше.',
+    no_meals:'Сегодня блюда не записаны',
+    global:'🌍 Глобально',my_country:'🏳️ Моя страна',weekly:'⭐ Неделя',
+    league_title:'Лига май 2026',days_remaining:'// осталось 6 дней',days_left:'дней осталось',
+    prize_title:'🏆 Приз месяца',
+    prize_txt:'Топ 3 получают значок + Зал Славы. Чемпион недели получает множитель 🔥.',
+    pts:'оч.',tab_stats:'📊 Статистика',tab_badges:'🏅 Значки',tab_weight:'⚖️ Вес',
+    streak_cal:'🔥 Календарь — Май',weight_log:'⚖️ Журнал веса',
+    start:'Старт',log_btn:'ЗАПИСАТЬ',global_lbl:'Глобально',streak_lbl:'Серия',total_pts:'Всего оч.',
+    great:'Отлично',good:'Хорошо',ok:'Нормально',poor:'Плохо',
+  }
+};
+
+let currentLang = localStorage.getItem('sd_lang') || 'en';
+function t(key) { return TRANSLATIONS[currentLang][key] || TRANSLATIONS.en[key] || key; }
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('sd_lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase() === lang);
+  });
+  const d = TRANSLATIONS[lang].dir;
+  document.body.style.direction = d;
+  document.documentElement.setAttribute('dir', d);
+  applyTranslations();
+}
+
+function applyTranslations() {
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  const setHTML = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
+  const setQ = (sel, val) => { const el = document.querySelector(sel); if(el) el.textContent = val; };
+  const setPH = (id, val) => { const el = document.getElementById(id); if(el) el.placeholder = val; };
+
+  // Bottom nav (preserve snap class)
+  setHTML('tab-home', `<span class="icon">🏠</span>${t('nav_home')}`);
+  setHTML('tab-snap', `<span class="icon">📸</span>${t('nav_snap')}`);
+  setHTML('tab-league', `<span class="icon">🏆</span>${t('nav_league')}`);
+  setHTML('tab-profile', `<span class="icon">👤</span>${t('nav_profile')}`);
+  document.getElementById('tab-snap').className = 'nav-tab snap-tab';
+
+  // Onboarding
+  setQ('.ob-tagline', t('ob_tagline'));
+  setQ('.ob-divider', t('ob_or'));
+  setQ('.ob-btn', t('ob_btn'));
+  setPH('obName', t('ob_name_ph'));
+  setPH('obEmail', t('ob_email_ph'));
+  setPH('obPassword', t('ob_pass_ph'));
+  setPH('countrySearch', t('ob_country_ph'));
+
+  // Home
+  const hsl = document.querySelectorAll('.hs-lbl');
+  if(hsl[0]) hsl[0].textContent = t('pts_today');
+  if(hsl[1]) hsl[1].textContent = t('day_streak');
+  if(hsl[2]) hsl[2].textContent = t('this_month');
+  setQ('.cbr-label', t('todays_cal'));
+  setQ('.mch-title', t('todays_meals'));
+
+  // Snap
+  setQ('.snap-title', t('what_eat'));
+  setQ('.snap-sub', t('snap_sub'));
+  setQ('.uz-title', t('snap_photo'));
+  setQ('.uz-sub', t('snap_photo_sub'));
+  setQ('.fat-note', t('fat_note'));
+  setQ('.mh-title', t('hidden_ing'));
+  setQ('.mh-opt', t('optional'));
+  setPH('manualInput', t('add_ph'));
+  setPH('manualQty', t('qty_ph'));
+  setHTML('analyzeBtn', t('analyze_btn'));
+  setQ('#retryBtn', t('log_another'));
+  setQ('#ls1', t('step1')); setQ('#ls2', t('step2')); setQ('#ls3', t('step3'));
+  setQ('.items-ttl', t('identified'));
+  setQ('.pts-label', t('pts_earned'));
+  setQ('.pts-sub', t('pts_added'));
+  setQ('.pts-unit', t('pts_unit'));
+  setQ('.tip-ttl', t('ai_tip'));
+  // Macro labels
+  const mgl = document.querySelectorAll('.mg-lbl');
+  if(mgl[0]) mgl[0].textContent = t('kcal');
+  if(mgl[1]) mgl[1].textContent = t('protein');
+  if(mgl[2]) mgl[2].textContent = t('carbs');
+  if(mgl[3]) mgl[3].textContent = t('fat');
+
+  // League
+  setQ('#ltab-global', t('global'));
+  setQ('#ltab-weekly', t('weekly'));
+  setQ('.lb-title2', t('league_title'));
+  setQ('.lb-sub2', t('days_remaining'));
+  setQ('.lb-days-lbl', t('days_left'));
+  setQ('.prize-title', t('prize_title'));
+  setQ('.prize-txt', t('prize_txt'));
+
+  // Profile tabs
+  setQ('#ptab-stats', t('tab_stats'));
+  setQ('#ptab-badges', t('tab_badges'));
+  setQ('#ptab-weight', t('tab_weight'));
+  setQ('.weight-btn', t('log_btn'));
+
+  // Re-render dynamic content with new lang
+  renderHomeMeals();
+  renderHomeLbMini();
+  renderLeague(document.querySelector('.ltab.active')?.dataset?.tab || 'country');
+
+  // Update country tab
+  const u = JSON.parse(localStorage.getItem('sd_user')||'{}');
+  if(u.code) {
+    const ctab = document.getElementById('ltab-country');
+    if(ctab) ctab.innerHTML = flagBadge(u.code,'sm') + ` <span style="margin-left:4px">${u.country}</span>`;
+  }
+}
+
+function codeToEmoji(code) { return code ? code.toUpperCase() : '??'; }
+
+function flagBadge(code, size) {
+  // Colored country code badge — works in all environments
+  const colors = {
+    IL:'#0038b8', US:'#3c3b6e', GB:'#012169', DE:'#000', FR:'#002395',
+    BR:'#009739', JP:'#bc002d', KR:'#003478', AU:'#00008b', CA:'#ff0000',
+    IT:'#009246', ES:'#c60b1e', RU:'#0036a7', CN:'#de2910', IN:'#ff9933',
+    TR:'#e30a17', MX:'#006847', AR:'#74acdf', PL:'#dc143c', NL:'#ae1c28',
+    SE:'#006aa7', NO:'#ef2b2d', DK:'#c60c30', FI:'#003580', CH:'#ff0000',
+    PT:'#006600', GR:'#0d5eaf', BE:'#000', UA:'#005bbb', SA:'#006c35',
+    AE:'#00732f', EG:'#ce1126', MA:'#c1272d', NG:'#008751', ZA:'#007a4d',
+    KE:'#006600', PK:'#01411c', IN:'#ff9933', TH:'#a51931', SG:'#ef3340',
+    MY:'#cc0001', PH:'#0038a8', VN:'#da251d', ID:'#ce1126', IR:'#239f40',
+    IQ:'#ce1126', JO:'#007a3d', LB:'#00a651', SY:'#007a3d', DEFAULT:'#555'
+  };
+  const bg = colors[code] || colors.DEFAULT;
+  const s = size === 'lg' ? 'width:52px;height:32px;font-size:13px;border-radius:8px;' :
+            size === 'md' ? 'width:32px;height:20px;font-size:10px;border-radius:4px;' :
+                            'width:24px;height:15px;font-size:8px;border-radius:3px;';
+  return `<span style="${s}background:${bg};color:white;font-family:'DM Mono',monospace;font-weight:700;display:inline-flex;align-items:center;justify-content:center;letter-spacing:0.5px;flex-shrink:0;">${(code||'??').toUpperCase()}</span>`;
+}
+
+function showGoogleNote() {
+  const n = document.getElementById('googleNote');
+  n.style.display = n.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── COUNTRIES ──
+const COUNTRIES = [
+  {n:'Afghanistan',c:'AF'},{n:'Albania',c:'AL'},{n:'Algeria',c:'DZ'},{n:'Argentina',c:'AR'},
+  {n:'Australia',c:'AU'},{n:'Austria',c:'AT'},{n:'Belgium',c:'BE'},{n:'Bolivia',c:'BO'},
+  {n:'Brazil',c:'BR'},{n:'Canada',c:'CA'},{n:'Chile',c:'CL'},{n:'China',c:'CN'},
+  {n:'Colombia',c:'CO'},{n:'Croatia',c:'HR'},{n:'Czech Republic',c:'CZ'},{n:'Denmark',c:'DK'},
+  {n:'Egypt',c:'EG'},{n:'Finland',c:'FI'},{n:'France',c:'FR'},{n:'Germany',c:'DE'},
+  {n:'Greece',c:'GR'},{n:'Hungary',c:'HU'},{n:'India',c:'IN'},{n:'Indonesia',c:'ID'},
+  {n:'Iran',c:'IR'},{n:'Iraq',c:'IQ'},{n:'Ireland',c:'IE'},{n:'Israel',c:'IL'},
+  {n:'Italy',c:'IT'},{n:'Japan',c:'JP'},{n:'Jordan',c:'JO'},{n:'Kenya',c:'KE'},
+  {n:'Korea',c:'KR'},{n:'Lebanon',c:'LB'},{n:'Malaysia',c:'MY'},{n:'Mexico',c:'MX'},
+  {n:'Morocco',c:'MA'},{n:'Netherlands',c:'NL'},{n:'New Zealand',c:'NZ'},{n:'Nigeria',c:'NG'},
+  {n:'Norway',c:'NO'},{n:'Pakistan',c:'PK'},{n:'Peru',c:'PE'},{n:'Philippines',c:'PH'},
+  {n:'Poland',c:'PL'},{n:'Portugal',c:'PT'},{n:'Romania',c:'RO'},{n:'Russia',c:'RU'},
+  {n:'Saudi Arabia',c:'SA'},{n:'Serbia',c:'RS'},{n:'Singapore',c:'SG'},{n:'South Africa',c:'ZA'},
+  {n:'Spain',c:'ES'},{n:'Sweden',c:'SE'},{n:'Switzerland',c:'CH'},{n:'Thailand',c:'TH'},
+  {n:'Turkey',c:'TR'},{n:'UAE',c:'AE'},{n:'Ukraine',c:'UA'},{n:'United Kingdom',c:'GB'},
+  {n:'USA',c:'US'},{n:'Venezuela',c:'VE'},{n:'Vietnam',c:'VN'},
+];
+
+let selectedCountry = null;
+const countrySearch = document.getElementById('countrySearch');
+const countryDropdown = document.getElementById('countryDropdown');
+
+countrySearch.addEventListener('input', () => {
+  const q = countrySearch.value.toLowerCase();
+  const matches = COUNTRIES.filter(c => c.n.toLowerCase().includes(q)).slice(0, 8);
+  if (!q || !matches.length) { countryDropdown.classList.remove('open'); return; }
+  countryDropdown.innerHTML = matches.map(c => `
+    <div class="country-option" onclick="selectCountry('${c.n}','${c.c}')">
+      ${flagBadge(c.c,'sm')}
+      <span style="margin-left:6px">${c.n}</span>
+    </div>
+  `).join('');
+  countryDropdown.classList.add('open');
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.country-search-wrap')) countryDropdown.classList.remove('open');
+});
+
+function selectCountry(name, code) {
+  selectedCountry = {name, code};
+  countrySearch.value = '[' + code + ']  ' + name;
+  countryDropdown.classList.remove('open');
+}
+
+// ── ONBOARDING ──
+function finishOnboarding() {
+  const name = document.getElementById('obName').value.trim();
+  const email = document.getElementById('obEmail').value.trim();
+  const pass = document.getElementById('obPassword').value;
+  const weight = document.getElementById('obWeight').value;
+  const target = document.getElementById('obTarget').value;
+  const err = document.getElementById('obError');
+  if (!name || !email || pass.length < 6 || !selectedCountry || !weight || !target) {
+    err.style.display = 'block';
+    err.textContent = pass.length > 0 && pass.length < 6 ? 'Password must be at least 6 characters' : 'Please fill in all fields';
+    return;
+  }
+  err.style.display = 'none';
+  localStorage.setItem('sd_user', JSON.stringify({
+    name, email, country: selectedCountry.name,
+    code: selectedCountry.code,
+    startWeight: parseFloat(weight),
+    targetWeight: parseFloat(target),
+    streak: 7
+  }));
+  document.getElementById('onboarding').style.display = 'none';
+  initApp();
+}
+
+// ── INIT ──
+function initApp() {
+  const raw = localStorage.getItem('sd_user');
+  if (!raw) return;
+  const u = JSON.parse(raw);
+  const h = new Date().getHours();
+  const gr = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const flag = codeToEmoji(u.code);
+
+  document.getElementById('heroGreeting').textContent = '// ' + gr;
+  document.getElementById('heroName').textContent = u.name + ' 👋';
+  document.getElementById('heroStreak').textContent = u.streak;
+  document.getElementById('navStreak').textContent = '🔥 ' + u.streak;
+  document.getElementById('navFlagBadge').innerHTML = flagBadge(u.code, 'sm');
+  document.getElementById('navCode').textContent = u.code;
+  document.getElementById('profFlag').innerHTML = flagBadge(u.code, 'lg');
+  document.getElementById('profName').textContent = u.name;
+  document.getElementById('profCountry').textContent = u.country;
+  document.getElementById('profEmail').textContent = u.email;
+  document.getElementById('profStreak').textContent = u.streak;
+  document.getElementById('startWeightDisp').textContent = u.startWeight + ' kg';
+
+  // Country tab
+  const ctab = document.getElementById('ltab-country');
+  ctab.innerHTML = flagBadge(u.code,'sm') + ' <span style="margin-left:4px">' + u.country + '</span>';
+
+  renderHomeMeals();
+  renderHomeLbMini();
+  renderStreak();
+  renderBadges();
+}
+
+window.addEventListener('load', async () => {
+  setLang(currentLang);
+
+  // Init Supabase
+  const SUPABASE_URL = 'https://kxagxriwqofdkpbobegz.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4YWd4cml3cW9mZGtwYm9iZWd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NjE2MjYsImV4cCI6MjA5NTMzNzYyNn0.HPwbAVNLvkOlulLAst5FHzicpGd_aaN-9TAAv3Z0OkQ';
+  window.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Check session
+  const { data: { session } } = await window.db.auth.getSession();
+  if (session) {
+    window.currentUser = session.user;
+    const { data: profile } = await window.db.from('users').select('*').eq('id', session.user.id).single();
+    if (profile) {
+      window.currentUserProfile = profile;
+      document.getElementById('onboarding').style.display = 'none';
+      initApp();
+      subscribeLeaderboard();
+      return;
+    }
+    // Has auth but no profile — show onboarding to complete
+    const nameEl = document.getElementById('obName');
+    if (nameEl && session.user.user_metadata?.full_name) nameEl.value = session.user.user_metadata.full_name;
+    const emailEl = document.getElementById('obEmail');
+    if (emailEl) { emailEl.value = session.user.email; emailEl.disabled = true; }
+    document.getElementById('passFieldWrap') && (document.getElementById('passFieldWrap').style.display = 'none');
+  }
+
+  // Fallback: localStorage user (old accounts)
+  if (localStorage.getItem('sd_user')) {
+    const u = JSON.parse(localStorage.getItem('sd_user'));
+    window.currentUserProfile = { ...u, country_code: u.code, start_weight: u.startWeight };
+    document.getElementById('onboarding').style.display = 'none';
+    initApp();
+  }
+});
+
+// ── SUPABASE FUNCTIONS ──
+window.currentUser = null;
+window.currentUserProfile = null;
+
+async function signInWithGoogle() {
+  const { error } = await window.db.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: 'https://slavaobedin1.github.io/snapdiet/' }
+  });
+  if (error) alert('Google sign-in failed: ' + error.message);
+}
+
+async function createUserProfile(name, email, country, code, startWeight, targetWeight) {
+  const user = window.currentUser;
+  const { error } = await window.db.from('users').insert({
+    id: user.id, name, email, country,
+    country_code: code,
+    start_weight: startWeight,
+    target_weight: targetWeight,
+    streak: 0, total_pts: 0
+  });
+  if (error) throw error;
+  await window.db.from('weight_log').insert({
+    user_id: user.id, weight: startWeight,
+    log_date: new Date().toISOString().split('T')[0]
+  });
+  const { data: profile } = await window.db.from('users').select('*').eq('id', user.id).single();
+  window.currentUserProfile = profile;
+}
+
+async function finishOnboarding() {
+  const name = document.getElementById('obName').value.trim();
+  const email = document.getElementById('obEmail').value.trim();
+  const pass = document.getElementById('obPassword').value;
+  const weight = document.getElementById('obWeight').value;
+  const target = document.getElementById('obTarget').value;
+  const err = document.getElementById('obError');
+  if (!name || !selectedCountry || !weight || !target) {
+    err.style.display='block'; err.textContent=t('ob_error'); return;
+  }
+  const btn = document.querySelector('.ob-btn');
+  btn.textContent='Creating...'; btn.disabled=true;
+  try {
+    if (!window.currentUser) {
+      if (pass.length < 6) { err.style.display='block'; err.textContent=t('ob_pass_error'); btn.textContent=t('ob_btn'); btn.disabled=false; return; }
+      if (!email) { err.style.display='block'; err.textContent=t('ob_error'); btn.textContent=t('ob_btn'); btn.disabled=false; return; }
+      const { data, error } = await window.db.auth.signUp({ email, password: pass });
+      if (error) throw error;
+      window.currentUser = data.user;
+    }
+    await createUserProfile(name, email||window.currentUser.email, selectedCountry.name, selectedCountry.code, parseFloat(weight), parseFloat(target));
+    localStorage.setItem('sd_user', JSON.stringify({
+      name, email: email||window.currentUser.email,
+      country: selectedCountry.name, code: selectedCountry.code,
+      startWeight: parseFloat(weight), targetWeight: parseFloat(target), streak: 0
+    }));
+    document.getElementById('onboarding').style.display='none';
+    initApp();
+    subscribeLeaderboard();
+  } catch(e) {
+    err.style.display='block'; err.textContent=e.message||t('ob_error');
+    btn.textContent=t('ob_btn'); btn.disabled=false;
+  }
+}
+
+async function getMealsToday() {
+  const today = new Date().toISOString().split('T')[0];
+  if (window.currentUser && window.db) {
+    const { data } = await window.db.from('meals').select('*').eq('user_id', window.currentUser.id).eq('log_date', today).order('logged_at');
+    return data || [];
+  }
+  return JSON.parse(localStorage.getItem('sd_meals_'+new Date().toDateString())||'[]');
+}
+
+async function addMealCloud(meal) {
+  const today = new Date().toISOString().split('T')[0];
+  if (window.currentUser && window.db) {
+    await window.db.from('meals').insert({
+      user_id: window.currentUser.id,
+      meal_name: meal.name, calories: meal.calories,
+      protein: meal.protein||0, carbs: meal.carbs||0, fat: meal.fat||0,
+      health_score: meal.score, league_pts: meal.score,
+      items: meal.items||[], photo_timestamp: photoTimestamp, log_date: today
+    });
+    await updateStreak();
+  } else {
+    const m = JSON.parse(localStorage.getItem('sd_meals_'+new Date().toDateString())||'[]');
+    m.push(meal);
+    localStorage.setItem('sd_meals_'+new Date().toDateString(), JSON.stringify(m));
+  }
+  renderHomeMeals();
+}
+
+async function deleteMeal(idOrIdx) {
+  if (window.currentUser && window.db) {
+    await window.db.from('meals').delete().eq('id', idOrIdx);
+  } else {
+    const m = JSON.parse(localStorage.getItem('sd_meals_'+new Date().toDateString())||'[]');
+    m.splice(idOrIdx, 1);
+    localStorage.setItem('sd_meals_'+new Date().toDateString(), JSON.stringify(m));
+  }
+  renderHomeMeals();
+}
+
+async function updateStreak() {
+  const u = window.currentUserProfile;
+  if (!u || !window.db) return;
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
+  if (u.last_log_date === today) return;
+  const newStreak = u.last_log_date === yesterday ? (u.streak||0)+1 : 1;
+  await window.db.from('users').update({ streak: newStreak, last_log_date: today }).eq('id', window.currentUser.id);
+  window.currentUserProfile.streak = newStreak;
+  window.currentUserProfile.last_log_date = today;
+  document.getElementById('navStreak').textContent = '🔥 ' + newStreak;
+  document.getElementById('heroStreak').textContent = newStreak;
+}
+
+async function logWeight() {
+  const inp = document.getElementById('weightInput');
+  const val = parseFloat(inp.value);
+  if (!val||val<30||val>300) return;
+  if (window.currentUser && window.db) {
+    await window.db.from('weight_log').insert({
+      user_id: window.currentUser.id, weight: val,
+      log_date: new Date().toISOString().split('T')[0]
+    });
+    await renderWeightLogCloud();
+  } else {
+    const log = document.getElementById('weightLog');
+    const rows = log.querySelectorAll('.wl-row');
+    const lastVal = parseFloat(rows[rows.length-1].querySelectorAll('span')[1].textContent)||val;
+    const diff = val-lastVal;
+    const dCls = diff<0?'down':'up';
+    const dStr = diff===0?'±0':diff<0?`▼ ${diff.toFixed(1)} kg`:`▲ +${diff.toFixed(1)} kg`;
+    const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const row = document.createElement('div');
+    row.className='wl-row fadein';
+    row.innerHTML=`<span class="wl-date">${today}</span><span class="wl-val">${val} kg</span><span class="wl-diff ${dCls}">${dStr}</span>`;
+    log.appendChild(row);
+  }
+  inp.value='';
+}
+
+async function renderWeightLogCloud() {
+  if (!window.currentUser || !window.db) return;
+  const { data } = await window.db.from('weight_log').select('*').eq('user_id', window.currentUser.id).order('logged_at');
+  if (!data || !data.length) return;
+  const log = document.getElementById('weightLog');
+  log.innerHTML = data.map((w,i) => {
+    const prev = i>0?data[i-1].weight:w.weight;
+    const diff = w.weight-prev;
+    const dCls = diff<0?'down':'up';
+    const dStr = i===0?'start':diff<0?`▼ ${diff.toFixed(1)} kg`:`▲ +${diff.toFixed(1)} kg`;
+    const date = new Date(w.logged_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<div class="wl-row"><span class="wl-date">${date}</span><span class="wl-val">${w.weight} kg</span><span class="wl-diff ${i===0?'':dCls}">${dStr}</span></div>`;
+  }).join('');
+}
+
+async function renderHomeMeals() {
+  const meals = await getMealsToday();
+  const getName = m => m.meal_name||m.name||'—';
+  const getCal = m => m.calories||0;
+  const getScore = m => m.health_score||m.score||0;
+  const getEmoji = m => (m.items&&m.items[0])?m.items[0].emoji:'🍽️';
+  const getTime = m => m.logged_at ? new Date(m.logged_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : (m.time||'—');
+  const getId = m => m.id||(meals.indexOf(m));
+
+  document.getElementById('mealCount').textContent = meals.length+' logged';
+  const totalCal = meals.reduce((s,m)=>s+getCal(m),0);
+  const totalPts = meals.reduce((s,m)=>s+getScore(m),0);
+  document.getElementById('homeTotalCal').textContent = totalCal.toLocaleString()+' kcal';
+  document.getElementById('homeCalBar').style.width = Math.min(100,Math.round(totalCal/20))+'%';
+  document.getElementById('homeTodayPts').textContent = totalPts;
+  document.getElementById('profPts').textContent = totalPts;
+  const list = document.getElementById('homeMealsList');
+  if (!meals.length) { list.innerHTML='<div class="no-meals">🍽️<br>No meals logged yet today</div>'; return; }
+  list.innerHTML = meals.map(m=>`
+    <div class="meal-row">
+      <div class="mr-emoji">${getEmoji(m)}</div>
+      <div class="mr-info"><div class="mr-name">${getName(m)}</div><div class="mr-time">${getTime(m)} · Score: ${getScore(m)}</div></div>
+      <div style="text-align:right"><div class="mr-cal">${getCal(m)} kcal</div></div>
+      <button class="mr-delete" onclick="deleteMeal('${getId(m)}')">✕</button>
+    </div>
+  `).join('');
+}
+
+async function renderLeague(tab) {
+  const list = document.getElementById('leagueList');
+  list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:12px;">Loading...</div>';
+  try {
+    const u = window.currentUserProfile;
+    let { data: all } = await window.db.from('leaderboard').select('*');
+    if (!all) all = [];
+    let ranked = all.map((r,i) => ({
+      rank: i+1, code: r.country_code, name: r.name,
+      country: r.country, pts: r.monthly_pts||0,
+      streak: r.streak||0,
+      me: window.currentUser && r.id === window.currentUser.id
+    }));
+    if (tab==='country' && u) ranked = ranked.filter(r=>r.code===u.country_code).map((r,i)=>({...r,rank:i+1}));
+    else if (tab==='weekly') ranked = ranked.slice(0,5);
+    if (!ranked.length) { list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No players yet — be the first! 🏆</div>'; return; }
+    const rc=['','g','s','b'];
+    list.innerHTML = ranked.map(r=>`
+      <div class="lb-row ${r.me?'me':''}">
+        <div class="lb-rnk ${rc[Math.min(r.rank,3)]||''}">${r.rank}</div>
+        ${flagBadge(r.code,'md')}
+        <div class="lb-uinfo">
+          <div class="lb-uname">${r.name}${r.me?'<span class="me-tag">YOU</span>':''}</div>
+          <div class="lb-usub">${r.country} · 🔥${r.streak}d</div>
+        </div>
+        <div><div class="lb-rpts">${Number(r.pts).toLocaleString()}</div><div class="lb-rptsub">pts</div></div>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Could not load leaderboard</div>';
+  }
+}
+
+async function renderHomeLbMini() {
+  try {
+    if (!window.db) return;
+    let { data: all } = await window.db.from('leaderboard').select('*').limit(5);
+    if (!all||!all.length) { document.getElementById('homeLbMini').innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">No players yet 🏆</div>'; return; }
+    const rc=['','g','s','b'];
+    document.getElementById('homeLbMini').innerHTML = all.map((r,i)=>`
+      <div class="lbm-row ${window.currentUser&&r.id===window.currentUser.id?'me':''}">
+        <div class="lbm-rank ${rc[Math.min(i+1,3)]||''}">${i+1}</div>
+        ${flagBadge(r.country_code,'sm')}
+        <div class="lbm-name" style="margin-left:6px">${r.name}${window.currentUser&&r.id===window.currentUser.id?'<span class="me-pill">ME</span>':''}</div>
+        <div class="lbm-pts">${Number(r.monthly_pts||0).toLocaleString()}</div>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+function subscribeLeaderboard() {
+  if (!window.db) return;
+  window.db.channel('meals-changes')
+    .on('postgres_changes',{event:'*',schema:'public',table:'meals'},()=>{
+      renderLeague(document.querySelector('.ltab.active')?.dataset?.tab||'global');
+      renderHomeLbMini();
+    }).subscribe();
+}
+
+function initApp() {
+  const u = window.currentUserProfile;
+  if (!u) return;
+  const h = new Date().getHours();
+  const gr = h<12?t('greeting_morning'):h<17?t('greeting_afternoon'):t('greeting_evening');
+  const code = u.country_code||u.code||'';
+  document.getElementById('heroGreeting').textContent = '// '+gr;
+  document.getElementById('heroName').textContent = u.name+' 👋';
+  document.getElementById('heroStreak').textContent = u.streak||0;
+  document.getElementById('navStreak').textContent = '🔥 '+(u.streak||0);
+  document.getElementById('navFlagBadge').innerHTML = flagBadge(code,'sm');
+  document.getElementById('navCode').textContent = code;
+  document.getElementById('profFlag').innerHTML = flagBadge(code,'lg');
+  document.getElementById('profName').textContent = u.name;
+  document.getElementById('profCountry').textContent = u.country;
+  document.getElementById('profEmail').textContent = u.email||'';
+  document.getElementById('profStreak').textContent = u.streak||0;
+  document.getElementById('startWeightDisp').textContent = (u.start_weight||u.startWeight||'—')+' kg';
+  const ctab = document.getElementById('ltab-country');
+  if(ctab) ctab.innerHTML = flagBadge(code,'sm')+` <span style="margin-left:4px">${u.country}</span>`;
+  renderHomeMeals();
+  renderHomeLbMini();
+  renderStreak();
+  renderBadges();
+  renderWeightLogCloud();
+}
+
+// ── NAV ──
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  window.scrollTo(0,0);
+  if (tab === 'league') {
+    switchLeagueTab(document.getElementById('ltab-country'), 'country');
+  }
+}
+function switchLeagueTab(el, tab) {
+  document.querySelectorAll('.ltab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderLeague(tab);
+}
+
+// ── MEALS localStorage fallback ──
+function getMeals() { return JSON.parse(localStorage.getItem('sd_meals_'+new Date().toDateString())||'[]'); }
+function saveMeals(m) { localStorage.setItem('sd_meals_'+new Date().toDateString(), JSON.stringify(m)); }
+function addMealToStore(meal) { const m=getMeals(); m.push(meal); saveMeals(m); }
+
+// ── LEAGUE fallback data (used only if not logged in) ──
+function getLeagueData(tab) { return []; }
+
+// ── STREAK ──
+function renderStreak() {
+  let html='';
+  for(let d=1;d<=31;d++){
+    let cls='sd';
+    if(d===25)cls+=' today';
+    else if(d>=19&&d<25)cls+=' done';
+    html+=`<div class="${cls}">${d}</div>`;
+  }
+  document.getElementById('streakGrid').innerHTML=html;
+}
+
+// ── BADGES ──
+const BADGE_CATS = [
+  { title:'🔥 Streaks', badges:[
+    {icon:'📸',name:'First Snap',desc:'Log your very first meal',unlocked:true},
+    {icon:'🔥',name:'7-Day Streak',desc:'Log 7 days in a row',unlocked:true,isNew:true},
+    {icon:'⚡',name:'30-Day Streak',desc:'Log 30 days in a row',unlocked:false},
+    {icon:'🏃',name:'Active Week',desc:'Log every day for 7 days',unlocked:false},
+  ]},
+  { title:'🥗 Nutrition', badges:[
+    {icon:'⚖️',name:'First Weigh-In',desc:'Log your starting weight',unlocked:true},
+    {icon:'🥗',name:'Clean Eater',desc:'Score 80+ three days straight',unlocked:true},
+    {icon:'🍎',name:'Perfect Day',desc:'Score 90+ on all meals in a day',unlocked:false},
+    {icon:'🎯',name:'On Target',desc:'Hit calorie goal 5 days in a row',unlocked:false},
+    {icon:'🧪',name:'Detail Master',desc:'Add hidden ingredients 10 times',unlocked:false},
+  ]},
+  { title:'⚖️ Weight Loss', badges:[
+    {icon:'💪',name:'-5% Club',desc:'Lose 5% of body weight',unlocked:false},
+    {icon:'🚀',name:'-10% Club',desc:'Lose 10% of body weight',unlocked:false},
+    {icon:'🦋',name:'Transformation',desc:'Reach your target weight',unlocked:false},
+  ]},
+  { title:'🏆 Competition', badges:[
+    {icon:'🥈',name:'Podium',desc:'Finish top 3 in a month',unlocked:false},
+    {icon:'🏆',name:'League Winner',desc:'Finish #1 in a month',unlocked:false},
+    {icon:'👑',name:'Hall of Fame',desc:'Win 3 monthly leagues',unlocked:false},
+    {icon:'🌍',name:'Global Top 10',desc:'Reach global top 10',unlocked:false},
+    {icon:'🌟',name:'100 Pt Day',desc:'Score 100+ points in a day',unlocked:false},
+    {icon:'🤝',name:'Social Eater',desc:'Invite 3 friends to compete',unlocked:false},
+  ]},
+];
+
+function switchProfileTab(tab) {
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.profile-tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('ptab-'+tab).classList.add('active');
+  document.getElementById('ptab-content-'+tab).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function renderBadges() {
+  let unlockedCount=0, totalCount=0, html='';
+  BADGE_CATS.forEach(cat => {
+    html+=`<div class="badge-cat"><div class="badge-cat-title">${cat.title}</div><div class="badge-list">`;
+    cat.badges.forEach(b => {
+      totalCount++; if(b.unlocked) unlockedCount++;
+      html+=`<div class="badge-row ${b.unlocked?'unlocked':'locked'}">
+        <div class="badge-icon-wrap">${b.icon}</div>
+        <div class="badge-row-info"><div class="badge-row-name">${b.name}</div><div class="badge-row-desc">${b.desc}</div></div>
+        <div class="badge-status">${b.unlocked?(b.isNew?'<span class="badge-new">NEW</span>':'<span class="badge-check">✓</span>'):'<span class="badge-lock">🔒</span>'}</div>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  document.getElementById('badgesBody').innerHTML=html;
+  const c=document.getElementById('badgeCount');
+  if(c) c.textContent=unlockedCount+' / '+totalCount;
+}
+
+// ── SNAP ──
+let b64=null,uploadedType='image/jpeg',manualItems=[],photoTimestamp='';
+
+document.getElementById('fileInput').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  uploadedType=file.type||'image/jpeg';
+
+  // Capture timestamp at moment of photo
+  const now = new Date();
+  photoTimestamp = now.toLocaleString('en-GB',{
+    day:'2-digit',month:'2-digit',year:'numeric',
+    hour:'2-digit',minute:'2-digit',second:'2-digit'
+  });
+  document.getElementById('tsDisplay').textContent = '📅 ' + photoTimestamp;
+
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img = new Image();
+    img.onload = () => {
+      // Stamp timestamp onto image via canvas
+      const canvas = document.getElementById('tsCanvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      // Draw timestamp bar at bottom
+      const barH = Math.max(40, img.height * 0.06);
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(0, img.height - barH, img.width, barH);
+
+      const fontSize = Math.max(16, img.width * 0.03);
+      ctx.font = `bold ${fontSize}px monospace`;
+      ctx.fillStyle = '#ffffff';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('📅 ' + photoTimestamp + '  ✓ SnapDiet', 12, img.height - barH/2);
+
+      // Get stamped image as base64
+      const stamped = canvas.toDataURL('image/jpeg', 0.92);
+      b64 = stamped.split(',')[1];
+      document.getElementById('previewImg').src = stamped;
+      document.getElementById('uploadZone').style.display='none';
+      document.getElementById('previewWrap').style.display='block';
+      document.getElementById('analyzeBtn').disabled=false;
+      document.getElementById('resultCard').classList.remove('show');
+      document.getElementById('retryBtn').style.display='none';
+      document.getElementById('errorBox').classList.remove('show');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function resetPhoto(){
+  b64=null; photoTimestamp='';
+  document.getElementById('fileInput').value='';
+  document.getElementById('uploadZone').style.display='block';
+  document.getElementById('previewWrap').style.display='none';
+  document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('tsDisplay').textContent='—';
+}
+
+function addManualItem(){
+  const inp=document.getElementById('manualInput');
+  const qty=document.getElementById('manualQty');
+  const v=inp.value.trim(); if(!v) return;
+  manualItems.push({name:v,qty:qty.value?qty.value+'g':'—'});
+  renderManual(); inp.value=''; qty.value='';
+}
+document.getElementById('manualInput').addEventListener('keydown',e=>{if(e.key==='Enter')addManualItem();});
+function removeManual(i){manualItems.splice(i,1);renderManual();}
+function renderManual(){
+  document.getElementById('manualList').innerHTML=manualItems.map((item,i)=>`
+    <div class="manual-item">
+      <span class="mi-emoji">🧂</span>
+      <span class="mi-name">${item.name}</span>
+      <span class="mi-qty">${item.qty}</span>
+      <button class="mi-rm" onclick="removeManual(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function resetAll(){
+  resetPhoto(); manualItems=[]; renderManual();
+  document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('retryBtn').style.display='none';
+  document.getElementById('errorBox').classList.remove('show');
+  document.getElementById('loadingCard').classList.remove('show');
+  document.getElementById('analyzeBtn').style.display='flex';
+}
+
+async function analyzeMeal(){
+  if(!b64) return;
+  document.getElementById('analyzeBtn').style.display='none';
+  document.getElementById('loadingCard').classList.add('show');
+  document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('errorBox').classList.remove('show');
+  document.getElementById('retryBtn').style.display='none';
+  ['ls1','ls2','ls3'].forEach((id,i)=>{
+    setTimeout(()=>{
+      if(i>0){const p=document.getElementById(['ls1','ls2','ls3'][i-1]);p.classList.remove('active');p.classList.add('done');}
+      document.getElementById(id).classList.add('active');
+    },i*1100);
+  });
+  const manualNote=manualItems.length
+    ?`\n\nUser added hidden ingredients: ${manualItems.map(m=>m.name+(m.qty&&m.qty!=='—'?' ('+m.qty+')':'')).join(', ')}. Include their estimated calories.`
+    :'\n\nNo hidden ingredients added.';
+  const prompt=`Nutrition AI for competitive health app. Analyze this meal photo (live photo taken at ${photoTimestamp||'now'}). Respond ONLY with valid JSON, no markdown.${manualNote}\nReturn: {"mealName":"short name","healthScore":<0-100>,"scoreLabel":"Great"or"Good"or"OK"or"Poor","calories":<int>,"protein":<int>,"carbs":<int>,"fat":<int>,"items":[{"emoji":"🍗","name":"name","portion":"150g","calories":<int>}],"goodFlags":["High protein"],"warnFlags":["High sodium"],"tip":"one tip","leaguePoints":<same as healthScore>}`;
+  try{
+    const res=await fetch('https://kxagxriwqofdkpbobegz.supabase.co/functions/v1/analyze-meal',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4YWd4cml3cW9mZGtwYm9iZWd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NjE2MjYsImV4cCI6MjA5NTMzNzYyNn0.HPwbAVNLvkOlulLAst5FHzicpGd_aaN-9TAAv3Z0OkQ'
+      },
+      body:JSON.stringify({image:b64, mediaType:uploadedType, prompt})
+    });
+    const data=await res.json();
+    if(data.error) throw new Error(typeof data.error==='string'?data.error:data.error.message||'API error');
+    const r=JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+    document.getElementById('loadingCard').classList.remove('show');
+    renderResult(r);
+  }catch(err){
+    document.getElementById('loadingCard').classList.remove('show');
+    const eb=document.getElementById('errorBox');
+    eb.textContent='⚠ '+(err.message||'Something went wrong.');
+    eb.classList.add('show');
+    document.getElementById('analyzeBtn').style.display='flex';
+    document.getElementById('analyzeBtn').disabled=false;
+  }
+}
+
+// ── SCORE CALCULATION ──
+function calcLeaguePoints(healthScore) {
+  const u = JSON.parse(localStorage.getItem('sd_user')||'{}');
+  const streak = u.streak || 0;
+  const meals = getMeals().length;
+  // 50% health, 30% streak bonus, 20% consistency
+  const base = Math.round(healthScore * 0.5);
+  const streakBonus = Math.min(30, Math.round(streak * 1.5)); // max 30
+  const consistencyBonus = Math.min(20, meals * 7); // max 20, 7pts per meal
+  const total = base + streakBonus + consistencyBonus;
+  return { total, base, streakBonus, consistencyBonus };
+}
+
+// store current result for recalc
+let currentResult = null;
+
+function renderResult(r) {
+  currentResult = r;
+  const pts = calcLeaguePoints(r.healthScore);
+
+  document.getElementById('rName').textContent = r.mealName;
+  document.getElementById('rScore').textContent = r.healthScore;
+  document.getElementById('rLabel').textContent = r.scoreLabel;
+  document.getElementById('rCal').textContent = r.calories;
+  document.getElementById('rProt').textContent = r.protein + 'g';
+  document.getElementById('rCarb').textContent = r.carbs + 'g';
+  document.getElementById('rFat').textContent = r.fat + 'g';
+  document.getElementById('rPts').textContent = '+' + pts.total;
+  document.getElementById('rTip').textContent = r.tip;
+  const bd = document.getElementById('ptsBreakdown');
+  if(bd) bd.textContent = `health ${pts.base} · streak +${pts.streakBonus} · meals +${pts.consistencyBonus}`;
+
+  const ring = document.getElementById('rRing');
+  ring.className = 'score-ring';
+  ring.classList.add(r.healthScore>=75?'sr-great':r.healthScore>=60?'sr-good':r.healthScore>=40?'sr-ok':'sr-poor');
+
+  renderItemsList(r.items);
+  renderPortionInputs(r.items);
+
+  document.getElementById('rFlags').innerHTML =
+    (r.goodFlags||[]).map(f=>`<span class="flag flag-good">✓ ${f}</span>`).join('') +
+    (r.warnFlags||[]).map(f=>`<span class="flag flag-warn">⚠ ${f}</span>`).join('');
+
+  const now = new Date();
+  const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  addMealCloud({name:r.mealName, calories:r.calories, score:pts.total, protein:r.protein, carbs:r.carbs, fat:r.fat, items:r.items||[], time:timeStr, emoji:(r.items&&r.items[0])?r.items[0].emoji:'🍽️'});
+
+  document.getElementById('resultCard').classList.add('show');
+  document.getElementById('retryBtn').style.display = 'block';
+  // Scroll to result, ensuring retry btn visible
+  setTimeout(() => {
+    document.getElementById('resultCard').scrollIntoView({behavior:'smooth', block:'start'});
+  }, 100);
+}
+
+function renderItemsList(items) {
+  let ih = (items||[]).map(item=>`
+    <div class="food-row">
+      <span class="fr-emoji">${item.emoji}</span>
+      <div class="fr-info">
+        <div class="fr-name">${item.name}</div>
+        <div class="fr-portion">${item.portion}</div>
+      </div>
+      <div class="fr-cal">${item.calories} kcal</div>
+    </div>
+  `).join('');
+  if (!manualItems.length) ih += `<div class="fat-warn-row">⚠️ Oils & dressings not visible — add them above for accuracy.</div>`;
+  document.getElementById('rItems').innerHTML = ih;
+}
+
+function renderPortionInputs(items) {
+  document.getElementById('portionInputs').innerHTML = (items||[]).map((item,i) => `
+    <div class="portion-edit-row">
+      <span class="per-emoji">${item.emoji}</span>
+      <span class="per-name">${item.name}</span>
+      <input class="per-input" id="per_${i}" type="number" value="${parseInt(item.portion)||100}" min="1" max="2000">
+      <span class="per-unit">g</span>
+    </div>
+  `).join('');
+}
+
+function toggleEditPortions() {
+  const form = document.getElementById('editPortionsForm');
+  const btn = document.getElementById('editPortionsBtn');
+  const isOpen = form.style.display !== 'none';
+  form.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '✏️ Edit portions' : '✕ Close';
+}
+
+async function recalcPortions() {
+  if (!currentResult) return;
+  const items = currentResult.items || [];
+  const updated = items.map((item, i) => {
+    const input = document.getElementById('per_' + i);
+    const newGrams = input ? parseInt(input.value) : parseInt(item.portion);
+    const origGrams = parseInt(item.portion) || 100;
+    const ratio = origGrams > 0 ? newGrams / origGrams : 1;
+    return {
+      ...item,
+      portion: newGrams + 'g',
+      calories: Math.round(item.calories * ratio)
+    };
+  });
+
+  const totalCal = updated.reduce((s,i) => s + i.calories, 0);
+  const ratio = currentResult.calories > 0 ? totalCal / currentResult.calories : 1;
+
+  // Update display
+  currentResult = {
+    ...currentResult,
+    items: updated,
+    calories: totalCal,
+    protein: Math.round(currentResult.protein * ratio),
+    carbs: Math.round(currentResult.carbs * ratio),
+    fat: Math.round(currentResult.fat * ratio),
+  };
+
+  document.getElementById('rCal').textContent = totalCal;
+  document.getElementById('rProt').textContent = Math.round(currentResult.protein) + 'g';
+  document.getElementById('rCarb').textContent = Math.round(currentResult.carbs) + 'g';
+  document.getElementById('rFat').textContent = Math.round(currentResult.fat) + 'g';
+
+  renderItemsList(updated);
+  renderPortionInputs(updated);
+  toggleEditPortions();
+}
+</script>
+</body>
+</html>
